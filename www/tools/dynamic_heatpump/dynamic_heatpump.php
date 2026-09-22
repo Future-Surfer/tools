@@ -847,6 +847,16 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary" @click="load_octopus_cosy">Load Octopus Cosy example</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" @click="set_schedule_max">Set all to {{ Math.max(...schedule.map(s => s.set_point)) }} &deg;C</button>
                     </div>
+
+                    <div class="hp-subheading">Heating season</div>
+                    <p class="hp-note">Disable individual months to hard-disable space heating in full-year runs. Room temperatures still free-run; hot water continues as scheduled.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <label v-for="(month, index) in month_names" :key="month" class="btn btn-sm"
+                            :class="heating_months[index] ? 'btn-outline-primary' : 'btn-outline-secondary'">
+                            <input class="visually-hidden" type="checkbox" v-model="heating_months[index]" @change="simulate">
+                            {{ month }}
+                        </label>
+                    </div>
                 </div>
 
                 <!-- DHW schedule -->
