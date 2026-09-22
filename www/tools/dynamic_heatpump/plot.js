@@ -152,6 +152,7 @@ function plot() {
     window.targetT_data = timeseries(sim_series.targetT_data);
     window.roomDeltaT_data = timeseries(sim_series.roomDeltaT_data || []);
     window.systemDeltaT_data = timeseries(sim_series.systemDeltaT_data || []);
+    window.deltaZero_data = window.roomDeltaT_data.map(function (p) { return [p[0], 0]; });
     window.solar_pv_data = timeseries(sim_series.solar_pv_data);
     window.cylTopT_data = timeseries(sim_series.cylTopT_data);
     window.cylBottomT_data = timeseries(sim_series.cylBottomT_data);
@@ -229,6 +230,11 @@ function plot() {
         series.push({ label: "CH", data: window.ch_mode_data, yaxis: 4, color: cs.ch.color, lines: { lineWidth: 0, show: true, fill: 0.15 } });
     if (cs.targetT.show)
         series.push({ label: "TargetT", data: window.targetT_data, yaxis: 2, color: cs.targetT.color });
+    // The reference is a regular Flot line, not a grid marking. Grid markings
+    // are filled ranges when their bounds are incomplete, which darkens the
+    // entire plot area rather than drawing the intended zero line.
+    if (cs.roomDeltaT.show || cs.systemDeltaT.show)
+        series.push({ label: "Delta zero", data: window.deltaZero_data, yaxis: 6, color: "#999", hoverable: false, lines: { lineWidth: 1, show: true } });
     if (cs.roomDeltaT.show)
         series.push({ label: "Room ΔT", data: window.roomDeltaT_data, yaxis: 6, color: cs.roomDeltaT.color });
     if (cs.systemDeltaT.show)
@@ -277,8 +283,9 @@ function plot() {
             { min: 0, max: 1, show: false, reserveSpace: false },
             // 5: frost mass
             { min: 0, font: { size: flot_font_size, color: "#00aacc" }, reserveSpace: false },
-            // 6: temperature differences (K and degrees C have equal steps)
-            { position: "right", font: style, reserveSpace: false }
+            // 6: temperature differences (K and degrees C have equal steps).
+            // Explicitly left so it stacks with the simulator's other axes.
+            { position: "left", font: style, reserveSpace: false }
         ],
         grid: {
             show: true,
@@ -292,12 +299,6 @@ function plot() {
         // The legend is the Vue pill row below the chart
         legend: { show: false }
     };
-
-    // A shared zero line keeps both delta series legible without changing the
-    // temperature axis used by the existing flow/return/room traces.
-    if (cs.roomDeltaT.show || cs.systemDeltaT.show) {
-        options.grid.markings = [{ yaxis: 6, y: 0, color: "#888", lineWidth: 1 }];
-    }
 
     // Let the power axis go below zero for the defrost draw
     if (app.show_negative_heat) options.yaxes[0].min = undefined;
